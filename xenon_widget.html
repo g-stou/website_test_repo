@@ -1,0 +1,149 @@
+<div class="xenon-heartbeat">
+    <div class="status-header">
+        <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            DETECTOR STATUS: <span class="status-text">ONLINE</span>
+        </div>
+        <div class="live-badge">● Live</div>
+    </div>
+
+    <div class="metrics-container">
+        <div class="metric-row">
+            <span class="label">TEMPERATURE = </span>
+            <span id="temperature" class="value">--</span>
+            <span class="unit">°C</span>
+            <span class="trend up">↑</span>
+        </div>
+        <div class="metric-row">
+            <span class="label">PRESSURE = </span>
+            <span id="pressure" class="value">--</span>
+            <span class="unit">bar</span>
+            <span class="trend down">↓</span>
+        </div>
+    </div>
+
+    <div class="footer-info">
+        <div id="last-update">Last Update: --:--:-- UTC</div>
+        <div>LNGS Gran Sasso, Italy</div>
+    </div>
+</div>
+
+<style>
+:root {
+    --bg-dark: #12161a;
+    --panel-bg: rgba(30, 35, 40, 0.8);
+    --accent-green: #4ade80;
+    --text-main: #e2e8f0;
+    --text-dim: #94a3b8;
+}
+
+.xenon-heartbeat {
+    background: var(--panel-bg);
+    color: var(--text-main);
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-text { color: var(--accent-green); }
+
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-green);
+    animation: pulse 2s infinite;
+}
+
+.live-badge {
+    background: rgba(74, 222, 128, 0.2);
+    color: var(--accent-green);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--accent-green);
+    font-size: 0.75rem;
+}
+
+.metrics-container { margin-bottom: 15px; }
+
+.metric-row {
+    font-size: 1.4rem;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+}
+
+.label { color: var(--text-dim); font-size: 1.1rem; }
+.value { color: #fff; }
+.trend { font-size: 1.2rem; margin-left: auto; }
+.trend.up { color: #60a5fa; }
+.trend.down { color: #f87171; }
+
+.footer-info {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+</style>
+
+<script>
+async function updateXenonMetrics() {
+    try {
+        const [pRes, tRes] = await Promise.all([
+            fetch('/wp-json/xenon/v1/metric/XE1T.CRY_PT103_PCHAMBER_AI.PI'),
+            fetch('/wp-json/xenon/v1/metric/XE1T.CRY_PT101_PCHAMBER_AI.PI')
+        ]);
+
+        const pressure = await pRes.json();
+        const temp = await tRes.json();
+
+        if (pressure?.value !== undefined) {
+            document.getElementById('pressure').textContent = pressure.value.toFixed(3);
+        }
+        if (temp?.value !== undefined) {
+            // If your API returns Kelvin, subtract 273.15 to match the image's Celsius
+            const celsius = temp.value - 273.15;
+            document.getElementById('temperature').textContent = celsius.toFixed(2);
+        }
+
+        const now = new Date().toISOString().substr(11, 8);
+        document.getElementById('last-update').textContent = `Last Update: ${now} UTC`;
+
+    } catch (err) {
+        console.error("Metric update failed:", err);
+    }
+}
+
+updateXenonMetrics();
+setInterval(updateXenonMetrics, 5000);
+</script>
