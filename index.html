@@ -118,8 +118,6 @@
 
 <script>
 async function updateXenonMetrics() {
-    const now = new Date().toISOString().substr(11, 8);
-    document.getElementById('last-update').textContent = `Last Update: ${now} UTC`;
     try {
         const [pRes, tRes] = await Promise.all([
             fetch('https://xenonexperiment.org/wp-json/xenon/v1/metric/XE1T.CRY_PT103_PCHAMBER_AI.PI'),
@@ -129,13 +127,17 @@ async function updateXenonMetrics() {
         const pressure = await pRes.json();
         const temp = await tRes.json();
 
-        if (pressure?.value !== undefined) {
-            document.getElementById('pressure').textContent = pressure.value.toFixed(3);
+        // API returns array with single object: [{"timestampseconds":..., "value":...}]
+        if (pressure?.[0]?.value !== undefined) {
+            document.getElementById('pressure').textContent = pressure[0].value.toFixed(3);
         }
-        if (temp?.value !== undefined) {
-            const celsius = temp.value;// - 273.15;
+        if (temp?.[0]?.value !== undefined) {
+            const celsius = temp[0].value;// - 273.15;
             document.getElementById('temperature').textContent = celsius.toFixed(2);
         }
+
+        const now = new Date().toISOString().substr(11, 8);
+        document.getElementById('last-update').textContent = `Last Update: ${now} UTC`;
 
     } catch (err) {
         console.error("Metric update failed:", err);
