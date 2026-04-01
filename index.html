@@ -122,8 +122,8 @@ async function updateXenonMetrics() {
     document.getElementById('last-update').textContent = `Last Update: ${now} UTC`;
     try {
         const [pRes, tRes] = await Promise.all([
-            fetch('/wp-json/xenon/v1/metric/XE1T.CRY_PT103_PCHAMBER_AI.PI'),
-            fetch('/wp-json/xenon/v1/metric/XE1T.CRY_PT101_PCHAMBER_AI.PI')
+            fetch('https://xenonexperiment.org/wp-json/xenon/v1/metric/XE1T.CRY_PT103_PCHAMBER_AI.PI'),
+            fetch('https://xenonexperiment.org/wp-json/xenon/v1/metric/XE1T.CRY_PT101_PCHAMBER_AI.PI')
         ]);
 
         const pressure = await pRes.json();
@@ -133,8 +133,7 @@ async function updateXenonMetrics() {
             document.getElementById('pressure').textContent = pressure.value.toFixed(3);
         }
         if (temp?.value !== undefined) {
-            // If your API returns Kelvin, subtract 273.15 to match the image's Celsius
-            const celsius = temp.value - 273.15;
+            const celsius = temp.value;// - 273.15;
             document.getElementById('temperature').textContent = celsius.toFixed(2);
         }
 
