@@ -120,8 +120,8 @@
 async function updateXenonMetrics() {
     try {
         const [pRes, tRes] = await Promise.all([
-            fetch('https://xenonexperiment.org/wp-json/xenon/v1/data/pressure'),
-            fetch('https://xenonexperiment.org/wp-json/xenon/v1/data/temperature')
+            fetch('https://xenonexperiment.org/wp-json/xenon/v1/metric/XE1T.CRY_PT103_PCHAMBER_AI.PI'),
+            fetch('https://xenonexperiment.org/wp-json/xenon/v1/metric/XE1T.CRY_TE101_TCRYOBOTT_AI.PI')
         ]);
 
         const pressure = await pRes.json();
@@ -132,7 +132,7 @@ async function updateXenonMetrics() {
             document.getElementById('pressure').textContent = pressure[0].value.toFixed(3);
         }
         if (temp?.[0]?.value !== undefined) {
-            const celsius = temp[0].value; // - 273.15;
+            const celsius = temp[0].value;// - 273.15;
             document.getElementById('temperature').textContent = celsius.toFixed(2);
         }
 
